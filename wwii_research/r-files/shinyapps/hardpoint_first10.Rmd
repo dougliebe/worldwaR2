@@ -1,0 +1,1138 @@
+---
+title: "Rise Hardpoint"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: column
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd('C:/Users/Doug/Documents/CoD/')
+
+library(ggplot2)
+library(plotly)
+library(flexdashboard)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(formattable)
+library(png)
+library(MASS)
+library(reshape2)
+output3 <- read.csv('allkills_hp.csv')
+img <- readPNG('cwl-data/maps/ww2/ardennes_forest.png')
+map_pick = 'Ardennes Forest'
+h = dim(img)[1]
+w = dim(img)[2]
+opponent = 'RISE NATION'
+team1 = "RED RESERVE"
+```
+
+Ardennes Forest
+=======================================================================
+
+Column {.tabset}
+-----------------------------------------------------------------------
+
+### HP1
+
+```{r echo = F}
+i = 1
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP2
+
+```{r echo = F}
+i = 2
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP3
+
+```{r echo = F}
+i = 3
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP4
+
+```{r echo = F}
+i = 4
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
+
+
+St. Marie
+=======================================================================
+
+Column {.tabset}
+-----------------------------------------------------------------------
+
+### HP1
+
+```{r echo = F}
+map_pick = "Sainte Marie du Mont"
+img <- readPNG('cwl-data/maps/ww2/sainte_marie_du_mont.png')
+i = 1
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+} 
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP2
+
+```{r echo = F}
+i = 2
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+} 
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP3
+
+```{r echo = F}
+i = 3
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+} 
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP4
+
+```{r echo = F}
+i = 4
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+} 
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
+
+Gibraltar
+=======================================================================
+
+Column {.tabset}
+-----------------------------------------------------------------------
+
+### HP1
+
+```{r echo = F}
+map_pick = "Gibraltar"
+img <- readPNG('cwl-data/maps/ww2/gibraltar.png')
+i = 1
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP2
+
+```{r echo = F}
+i = 2
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP3
+
+```{r echo = F}
+i = 3
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP4
+
+```{r echo = F}
+i = 4
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
+
+
+London Docks
+=======================================================================
+
+Column {.tabset}
+-----------------------------------------------------------------------
+
+### HP1
+
+```{r echo = F}
+map_pick = "London Docks"
+img <- readPNG('cwl-data/maps/ww2/london_docks.png')
+i = 1
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP2
+
+```{r echo = F}
+i = 2
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP3
+
+```{r echo = F}
+i = 3
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP4
+
+```{r echo = F}
+i = 4
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP5
+
+```{r echo = F}
+i = 5
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
+Valkyrie
+=======================================================================
+
+Column {.tabset}
+-----------------------------------------------------------------------
+
+### HP1
+
+```{r echo = F}
+map_pick = "Valkyrie"
+img <- readPNG('cwl-data/maps/ww2/valkyrie.png')
+i = 1
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP2
+
+```{r echo = F}
+i = 2
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP3
+
+```{r echo = F}
+i = 3
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP4
+
+```{r echo = F}
+i = 4
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+### HP5
+
+```{r echo = F}
+i = 5
+hardpoint <- output3 %>%
+  filter(team != opp, hpdur <=  10000) %>%
+  filter(!is.na(pos.x)) %>%
+  filter(team == opponent, map == map_pick)
+
+l_break <- function(x,y,data) {
+  test = data
+  test$a <- sqrt((data$x - x)^2+(data$y - y)^2)
+  return(sum(test[test$a <= 200,'z'])/(sum(test$z)))
+}
+
+
+data = hardpoint[hardpoint$hp == i,]
+d1 = kde2d(data$pos.x, data$pos.y, lims=c(range(data$pos.x),range(data$pos.y)), n=50)
+rownames(d1$z) = d1$x
+colnames(d1$z) = d1$y
+
+# Now melt it to long format
+d1.m = melt(d1$z, id.var=rownames(d1))
+names(d1.m) = c("x","y","z")
+coor = which(d1.m$z==max(d1.m$z))
+
+val = l_break(d1.m[coor,1], d1.m[coor,2], d1.m)
+ggplot(data=data) +
+  annotation_custom(grid::rasterGrob(img, width=unit(1,"npc"), height=unit(1,"npc")), 0, w, 0,-h) +
+  theme_bw() + theme(legend.position = 'none',axis.title = element_blank()) +
+  coord_equal() + # To keep the aspect ratio of the image.
+  scale_x_continuous(expand=c(0,0),limits=c(0,w)) +
+  scale_y_reverse(expand=c(0,0),limits=c(h,0)) +
+  stat_density2d(aes(pos.x,pos.y, fill=..level..,alpha=(..level..)^2),
+  geom='polygon', h = 70) +
+  # stat_bin2d(binwidth=3,aes(x,y,alpha=(..count..)^(1/2))) +
+  # stat_binhex(aes(x=x, y=y, alpha=(..density..)^1), bins = 40) +
+  scale_fill_gradientn(colours=c( ('red'),("red")),name = "Frequency") +
+  guides(alpha="none") +
+  # ggtitle(label = paste(team1, " setup on HP #", hpt, sep = ""))
+  ggtitle(label = paste("Engagements",opponent)) +
+  geom_text(aes(d1.m[coor,1], d1.m[coor,2], label = paste(round(val,2)*100,"%",sep = ""),size = 5,fontface=2, colour = 'white'))
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```

@@ -1,0 +1,623 @@
+---
+title: "Team Records"
+resource_files:
+- cwl-data/maps/ww2/ardennes_forest.png
+- cwl-data/maps/ww2/flaktower.png
+- cwl-data/maps/ww2/gibraltar.png
+- cwl-data/maps/ww2/london_docks.png
+- cwl-data/maps/ww2/sainte_marie_du_mont.png
+- cwl-data/maps/ww2/uss_texas.png
+- cwl-data/maps/ww2/valkyrie.png
+runtime: shiny
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r global, include=FALSE}
+# load data in 'global' chunk so it can be shared by all users of the dashboard
+knitr::opts_chunk$set(echo = TRUE)
+# setwd('C:/Users/Doug/Documents/CoD/')
+
+library(ggplot2)
+library(flexdashboard)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(formattable)
+library(png)
+library(MASS)
+library(reshape2)
+library(datasets)
+library(magrittr)
+library(DT)
+library(htmltools)
+output3 <- read.csv('allkills_hp.csv')
+self <- "EUNITED"
+
+```
+
+
+Column {.sidebar data-width=200}
+-----------------------------------------------------------------------
+
+
+```{r echo = F}
+# selectInput('self', 'Team', sort(c('RED RESERVE','UNILAD','TEAM KALIBER','EUNITED','ECHO FOX', 'RISE NATION','OPTIC GAMING','FAZE CLAN', 'EVIL GENIUSES','TEAM ENVYUS','SPLYCE',"EPSILON", 'LUMINOSITY','COMPLEXITY',"MINDFREAK","TAINTED MINDS")))
+
+selectInput('xcol', 'Opponent', sort(c('RED RESERVE','UNILAD','TEAM KALIBER','EUNITED','ECHO FOX', 'RISE NATION','OPTIC GAMING','FAZE CLAN', 'EVIL GENIUSES','TEAM ENVYUS','SPLYCE',"EPSILON", 'LUMINOSITY','COMPLEXITY',"MINDFREAK","TAINTED MINDS")))
+
+selectInput('self', 'Opponent', sort(c('RED RESERVE','UNILAD','TEAM KALIBER','EUNITED','ECHO FOX', 'RISE NATION','OPTIC GAMING','FAZE CLAN', 'EVIL GENIUSES','TEAM ENVYUS','SPLYCE',"EPSILON", 'LUMINOSITY','COMPLEXITY',"MINDFREAK","TAINTED MINDS")))
+    
+    
+selectInput('ycol', 'Mode', sort(c("Hardpoint",'Capture the Flag','Search & Destroy')),
+                selected='Hardpoint')
+```
+<br>
+  <br>
+  
+```{r echo =F}
+radioButtons(inputId="searchmap", label="Pick a Map (S&D only)", 
+               choices=c("Ardennes Forest",'London Docks','Sainte Marie du Mont','Valkyrie','USS Texas'))
+
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Map Selection
+
+```{r echo = F}
+output3 <- reactive({
+  opponent <- input$xcol
+  self <- input$self
+  if (input$ycol == "Hardpoint") {
+    output3 <- read.csv('allkills_hp.csv')
+    one <- output3 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(win = ifelse(sum(win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+  summarise(wins = sum(win), losses = n()-wins,WL = paste(wins,'-',losses, sep = ''), games = n() ) %>%
+  filter(team == self) %>%
+  ungroup() %>%
+  mutate(play_rate = games/sum(games),
+         win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() 
+    
+    
+    
+    ## now for self
+    output3 <- read.csv('allkills_hp.csv')
+    two <- output3 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(win = ifelse(sum(win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+  summarise(wins = sum(win), losses = n()-wins,WL = paste(wins,'-',losses, sep = ''), games = n() ) %>%
+  filter(team == opponent) %>%
+  ungroup() %>%
+  mutate(play_rate = games/sum(games),
+         win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() %>%
+      merge(one, by = 'map')
+    # 
+    sketch = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(rowspan = 2, 'Map'),
+      th(colspan = 3, opponent),
+      th(colspan = 3, self)
+    ),
+    tr(
+      lapply(rep(c('WL', 'Play Rate', 'Win Rate'), 2), th)
+    )
+  )
+))
+    two <- two  %>%
+      datatable(container = sketch, rownames = F,options = list(dom='t',ordering=F,columnDefs = list(list(className = 'dt-center', targets = 0:6)))) %>%
+      formatPercentage(c('play_rate.x', 'play_rate.y','win_rate.x','win_rate.y'), 1)
+      
+    return(two)
+    }
+  else if (input$ycol == "Search & Destroy") {
+        output3 <- read.csv('allkills_snd.csv')
+    one <- output3 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(win = ifelse(sum(game_win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+  summarise(wins = sum(win), losses = n()-wins,WL = paste(wins,'-',losses, sep = ''), games = n() ) %>%
+  filter(team == self) %>%
+  ungroup() %>%
+  mutate(play_rate = games/sum(games),
+         win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() 
+    
+    
+    
+    ## now for self
+    output3 <- read.csv('allkills_snd.csv')
+    two <- output3 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(win = ifelse(sum(game_win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+  summarise(wins = sum(win), losses = n()-wins,WL = paste(wins,'-',losses, sep = ''), games = n() ) %>%
+  filter(team == opponent) %>%
+  ungroup() %>%
+  mutate(play_rate = games/sum(games),
+         win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() %>%
+      merge(one, by = 'map')
+    # 
+    sketch = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(rowspan = 2, 'Map'),
+      th(colspan = 3, opponent),
+      th(colspan = 3, self)
+    ),
+    tr(
+      lapply(rep(c('WL', 'Play Rate', 'Win Rate'), 2), th)
+    )
+  )
+))
+    two <- two  %>%
+      datatable(container = sketch, rownames = F,options = list(dom='t',ordering=F,columnDefs = list(list(className = 'dt-center', targets = 0:6)))) %>%
+      formatPercentage(c('play_rate.x', 'play_rate.y','win_rate.x','win_rate.y'), 1)
+      
+    return(two)
+    }
+  else {
+            output3 <- read.csv('allkills_ctf.csv')
+    one <- output3 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(win = ifelse(sum(game_win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+  summarise(wins = sum(win), losses = n()-wins,WL = paste(wins,'-',losses, sep = ''), games = n() ) %>%
+  filter(team == self) %>%
+  ungroup() %>%
+  mutate(play_rate = games/sum(games),
+         win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() 
+    
+    
+    
+    ## now for self
+    output3 <- read.csv('allkills_ctf.csv')
+    two <- output3 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(win = ifelse(sum(game_win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+  summarise(wins = sum(win), losses = n()-wins,WL = paste(wins,'-',losses, sep = ''), games = n() ) %>%
+  filter(team == opponent) %>%
+  ungroup() %>%
+  mutate(play_rate = games/sum(games),
+         win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() %>%
+      merge(one, by = 'map')
+    # 
+    sketch = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(rowspan = 2, 'Map'),
+      th(colspan = 3, opponent),
+      th(colspan = 3, self)
+    ),
+    tr(
+      lapply(rep(c('WL', 'Play Rate', 'Win Rate'), 2), th)
+    )
+  )
+))
+    two <- two  %>%
+      datatable(container = sketch, rownames = F,options = list(dom='t',ordering=F,columnDefs = list(list(className = 'dt-center', targets = 0:6)))) %>%
+      formatPercentage(c('play_rate.x', 'play_rate.y','win_rate.x','win_rate.y'), 1)
+      
+    return(two)
+    }
+  
+})
+
+renderDataTable(output3())
+
+```
+
+### Last 5 
+
+```{r echo = F}
+
+output5 <- reactive({
+  opponent <- input$xcol
+  self <- input$self
+
+  if (input$ycol == "Hardpoint") {
+    output5 <- read.csv('allkills_hp.csv')
+    one <- output5 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(X = max(X), win = ifelse(sum(win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+      top_n(n = 5, wt = X) %>%
+  summarise(wins = sum(win), losses = n()-wins, games = n(),WL = paste(wins,'-',losses, sep = '')) %>%
+  filter(team == self) %>%
+  ungroup() %>%
+  mutate(win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses,-games) %>%
+    data.frame() 
+    
+    
+    output5 <- read.csv('allkills_hp.csv')
+    two <- output5 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(X = max(X), win = ifelse(sum(win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+      top_n(n = 5, wt = X) %>%
+  summarise(wins = sum(win), losses = n()-wins, games = n(),WL = paste(wins,'-',losses, sep = '')) %>%
+  filter(team == opponent) %>%
+  ungroup() %>%
+  mutate(win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() %>%
+      merge(one, by = 'map')
+    
+    sketch = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(rowspan = 2, 'Map'),
+      th(colspan = 2, opponent),
+      th(colspan = 2, self)
+    ),
+    tr(
+      lapply(rep(c('WL', 'Win Rate'), 2), th)
+    )
+  )
+))
+    two <- two  %>%
+      datatable(container = sketch, rownames = F,options = list(dom='t',ordering=F,columnDefs = list(list(className = 'dt-center', targets = 0:4)))) %>%
+      formatPercentage(c('win_rate.x','win_rate.y'), 1)
+    
+    return(two)
+    }
+  else if (input$ycol == "Search & Destroy") {
+        output5 <- read.csv('allkills_snd.csv')
+    one <- output5 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(X = max(X), win = ifelse(sum(game_win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+      top_n(n = 5, wt = X) %>%
+  summarise(wins = sum(win), losses = n()-wins, games = n(),WL = paste(wins,'-',losses, sep = '')) %>%
+  filter(team == self) %>%
+  ungroup() %>%
+  mutate(win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses,-games) %>%
+    data.frame() 
+    
+    
+    output5 <- read.csv('allkills_snd.csv')
+    two <- output5 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(X = max(X), win = ifelse(sum(game_win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+      top_n(n = 5, wt = X) %>%
+  summarise(wins = sum(win), losses = n()-wins, games = n(),WL = paste(wins,'-',losses, sep = '')) %>%
+  filter(team == opponent) %>%
+  ungroup() %>%
+  mutate(win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() %>%
+      merge(one, by = 'map')
+    
+    sketch = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(rowspan = 2, 'Map'),
+      th(colspan = 2, opponent),
+      th(colspan = 2, self)
+    ),
+    tr(
+      lapply(rep(c('WL', 'Win Rate'), 2), th)
+    )
+  )
+))
+    two <- two  %>%
+      datatable(container = sketch, rownames = F,options = list(dom='t',ordering=F,columnDefs = list(list(className = 'dt-center', targets = 0:4)))) %>%
+      formatPercentage(c('win_rate.x','win_rate.y'), 1)
+    
+    return(two)
+    }
+  else {
+            output5 <- read.csv('allkills_ctf.csv')
+    one <- output5 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(X = max(X), win = ifelse(sum(game_win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+      top_n(n = 5, wt = X) %>%
+  summarise(wins = sum(win), losses = n()-wins, games = n(),WL = paste(wins,'-',losses, sep = '')) %>%
+  filter(team == self) %>%
+  ungroup() %>%
+  mutate(win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses,-games) %>%
+    data.frame() 
+    
+    
+    output5 <- read.csv('allkills_ctf.csv')
+    two <- output5 %>%
+    filter(team != opp) %>%
+    group_by(id, map, team, opp) %>%
+  summarise(X = max(X), win = ifelse(sum(game_win)>0, 1, 0)) %>%
+  ungroup() %>%
+  group_by(map, team) %>%
+      top_n(n = 5, wt = X) %>%
+  summarise(wins = sum(win), losses = n()-wins, games = n(),WL = paste(wins,'-',losses, sep = '')) %>%
+  filter(team == opponent) %>%
+  ungroup() %>%
+  mutate(win_rate = wins/(games)) %>%
+  # mutate(win_rate = color_tile('white', "green")(win_rate)) %>% 
+  #   rename(Map = map, W = wins, L = losses, Games = games, `Play%` = play_rate, `Win%` = win_rate) %>%
+  dplyr::select(-team, -wins, -losses, -games) %>%
+    data.frame() %>%
+      merge(one, by = 'map')
+    
+    sketch = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(rowspan = 2, 'Map'),
+      th(colspan = 2, opponent),
+      th(colspan = 2, self)
+    ),
+    tr(
+      lapply(rep(c('WL', 'Win Rate'), 2), th)
+    )
+  )
+))
+    two <- two  %>%
+      datatable(container = sketch, rownames = F,options = list(dom='t',ordering=F,columnDefs = list(list(className = 'dt-center', targets = 0:4)))) %>%
+      formatPercentage(c('win_rate.x','win_rate.y'), 1)
+    
+    return(two)
+    }
+  
+})
+
+renderDataTable(output5(),options = list(dom = 't'))
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Search Bombsite Success (S&D only)
+
+```{r echo = F}
+
+
+output6 <- read.csv('allkills_snd.csv')
+league_average <- output6 %>%
+  filter(offdef == 'off', round_time < 30000, team == self) %>%
+  group_by(id, map, round) %>%
+  summarise(win = ifelse(sum(round_win)>0,1,0), 
+            site = ifelse(sum(site == "A") > sum(site == "B"),1,
+                          ifelse(sum(site == "A") < sum(site == "B"),2,3))) %>%
+  ungroup() %>%
+  group_by(map, site) %>%
+  filter(site %in% c(1,2,3)) %>%
+  summarise(win = mean(win), n = n()) %>%
+  ungroup() %>%
+  group_by(map) %>%
+  mutate(attempt_pct = n/sum(n)) %>%
+  data.frame()
+
+
+team <- reactive({
+  if (input$ycol == "Search & Destroy") {
+  opponent = input$xcol
+  self <- input$self
+  map_pick = input$searchmap
+  output7 <- output6 %>%
+  filter(offdef == 'off', round_time < 30000, team == opponent, map == map_pick) %>%
+  group_by(id, map, round) %>%
+  summarise(win = ifelse(sum(round_win)>0,1,0), 
+            site = ifelse(sum(site == "A") > sum(site == "B"),1,
+                          ifelse(sum(site == "A") < sum(site == "B"),2,3))) %>%
+  ungroup() %>%
+  group_by(map, site) %>%
+  filter(site %in% c(1,2,3)) %>%
+  summarise(win = mean(win), n = n()) %>%
+  ungroup() %>%
+  group_by(map) %>%
+  mutate(attempt_pct = n/sum(n)) %>%
+    data.frame()
+  
+  output7 <- merge(output7, league_average, by = c('map','site')) 
+  output7 <- output7 %>%
+    # mutate(win_dif = percent(win.x-win.y,1), att_dif = percent(attempt_pct.x-attempt_pct.y,1)) %>%
+    # mutate(win.x=percent(win.x,1), attempt_pct.x = percent(attempt_pct.x,1)) %>%
+    dplyr::select(-n.y) %>%
+    rename(Map = map, Site = site,n = n.x, `Win%` = win.x, `Attempt%` = attempt_pct.x,
+           `eU Win%` = win.y, `eU Att%` = attempt_pct.y) %>%
+    mutate(Site = ifelse(Site == 1, "A",ifelse(Site == 2, "B", "SPLIT"))) %>%
+    datatable(options = list(dom='t',ordering=F,columnDefs = list(list(className = 'dt-center', targets = 0:7)))) %>%
+    formatPercentage(c('Win%','Attempt%','eU Win%','eU Att%'),1)
+  
+  }
+  else {output7 <- data.frame()}
+  return(output7)
+  })
+
+renderDataTable(team())
+
+```
+
+### Oponent Success VS. Team (S&D only)
+
+```{r echo = F}
+
+team2 <- reactive({
+  if (input$ycol == "Search & Destroy") {
+  opponent = input$xcol
+  self <- input$self
+  map_pick = input$searchmap
+  # For teams against opponent
+  
+  output9 <- output6 %>%
+  filter(offdef == 'off', round_time < 30000, opp == opponent, map == map_pick) %>%
+  group_by(id, map, round) %>%
+  summarise(win = ifelse(sum(round_win)>0,1,0), 
+            site = ifelse(sum(site == "A") > sum(site == "B"),1,
+                          ifelse(sum(site == "A") < sum(site == "B"),2,3))) %>%
+  ungroup() %>%
+  group_by(map, site) %>%
+  filter(site %in% c(1,2,3)) %>%
+  summarise(win = mean(win), n = n()) %>%
+  ungroup() %>%
+  group_by(map) %>%
+  mutate(attempt_pct = n/sum(n)) %>%
+    data.frame()
+  
+  output9 <- merge(output9, league_average, by = c('map','site')) 
+  output9 <- output9 %>%
+    # mutate(win_dif = percent(win.x-win.y,1), att_dif = percent(attempt_pct.x-attempt_pct.y,1)) %>%
+    # mutate(win.x=percent(win.x,1), attempt_pct.x = percent(attempt_pct.x,1)) %>%
+    dplyr::select(-n.y) %>%
+    rename(Map = map, Site = site,n = n.x, `Win%` = win.x, `Attempt%` = attempt_pct.x,
+           `eU Win%` = win.y, `eU Att%` = attempt_pct.y) %>%
+    mutate(Site = ifelse(Site == 1, "A",ifelse(Site == 2, "B", "SPLIT"))) %>%
+    datatable(options = list(dom='t',ordering=F,columnDefs = list(list(className = 'dt-center', targets = 0:7)))) %>%
+    formatPercentage(c('Win%','Attempt%','eU Win%','eU Att%'),1)
+  
+  
+  }
+  else {output9 <- data.frame()}
+  return(output9)
+  })
+renderDataTable({team2()})
+```
+
+<!-- ### Last 10 Games -->
+
+<!-- ```{r echo = F} -->
+
+<!-- output4 <- reactive({ -->
+<!--   opponent <- input$xcol -->
+<!--   if (input$ycol == "Hardpoint") { -->
+<!--     output4 <- read.csv('allkills_hp.csv') -->
+<!--           output4 <- output4 %>% -->
+<!--     filter(team != opp) %>% -->
+<!--       group_by(id, map, team, opp) %>% -->
+<!--       summarise(X = max(X), win = ifelse(sum(win)>0, 1, 0)) %>%  -->
+<!--       ungroup() %>% -->
+<!--       group_by(team) %>% filter(team == opponent) %>% -->
+<!--       ungroup() %>% -->
+<!--       arrange(desc(X)) %>% -->
+<!--           rename(Map = map, Team = team, Opp = opp, Result = win) %>% -->
+<!--           head(10) %>% -->
+<!--       data.frame() %>% -->
+<!--       formattable(list(Team = formatter("span",  -->
+<!--     style = ~ style('font-weight' = ifelse(Result == 1, "bold", NA))), -->
+<!--     Opp = formatter("span",  -->
+<!--     style = ~ style('font-weight' = ifelse(Result == 0, "bold", NA))))) %>% -->
+<!--       dplyr::select(-X, -id) %>% -->
+<!--       as.datatable(options = list(dom='t',ordering=F,paging = F)) -->
+<!--     return(output4) -->
+<!--     } -->
+<!--   else if (input$ycol == "Search & Destroy") { -->
+<!--     output4 <- read.csv('allkills_snd.csv') -->
+<!--        output4 <- output4 %>% -->
+<!--     filter(team != opp) %>% -->
+<!--       group_by(id, map, team, opp) %>% -->
+<!--       summarise(X = max(X), win = ifelse(sum(game_win)>0, 1, 0)) %>%  -->
+<!--       ungroup() %>% -->
+<!--       group_by(team) %>% filter(team == opponent) %>% -->
+<!--       ungroup() %>% -->
+<!--       arrange(desc(X)) %>% -->
+<!--           rename(Map = map, Team = team, Opp = opp, Result = win) %>% -->
+<!--           head(10) %>% -->
+<!--       data.frame() %>% -->
+<!--       formattable(list(Team = formatter("span",  -->
+<!--     style = ~ style('font-weight' = ifelse(Result == 1, "bold", NA))), -->
+<!--     Opp = formatter("span",  -->
+<!--     style = ~ style('font-weight' = ifelse(Result == 0, "bold", NA))))) %>% -->
+<!--       dplyr::select(-X, -id) %>% -->
+<!--       as.datatable(options = list(dom='t',ordering=F)) -->
+<!--     return(output4) -->
+<!--     } -->
+<!--   else { -->
+<!--     output4 <- read.csv('allkills_ctf.csv') -->
+<!--         output4 <- output4 %>% -->
+<!--     filter(team != opp) %>% -->
+<!--       group_by(id, map, team, opp) %>% -->
+<!--       summarise(X = max(X), win = ifelse(sum(game_win)>0, 1, 0)) %>%  -->
+<!--       ungroup() %>% -->
+<!--       group_by(team) %>% filter(team == opponent) %>% -->
+<!--       ungroup() %>% -->
+<!--       arrange(desc(X)) %>% -->
+<!--           rename(Map = map, Team = team, Opp = opp, Result = win) %>% -->
+<!--           head(10) %>% -->
+<!--       data.frame() %>% -->
+<!--       formattable(list(Team = formatter("span",  -->
+<!--     style = ~ style('font-weight' = ifelse(Result == 1, "bold", NA))), -->
+<!--     Opp = formatter("span",  -->
+<!--     style = ~ style('font-weight' = ifelse(Result == 0, "bold", NA))))) %>% -->
+<!--       dplyr::select(-X, -id) %>% -->
+<!--       as.datatable(options = list(dom='t',ordering=F)) -->
+<!--     return(output4) -->
+<!--     } -->
+
+<!-- }) -->
+
+<!-- renderDataTable(output4()) -->
+
+<!-- ``` -->
